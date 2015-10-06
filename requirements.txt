@@ -1,0 +1,5 @@
+tornado==4.2.1
+pycurl
+yieldpoints
+Tornado-MySQL==0.5
+tldextract==1.7.1
