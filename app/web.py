@@ -10,18 +10,19 @@ import tornado.escape
 import tornado.httpserver
 from tornado.options import define, options, parse_command_line
 
-from components import uimodules, tld_extractor
+from components import uimodules, tld_extractor, storage
 from components.handlers import MainHandler, DomainPublicHandler
 
 
 define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=False, help="enable debug mode", type=bool)
-define("cookie_secret", help="set u cookie secret value into config.py", type=str)
+define("cookie_secret", help="cookie secret value", type=str)
 
 
 class Application(tornado.web.Application):
     def __init__(self):
         self.tld_extractor = tld_extractor.Extractor()
+        self.storage = storage.Storage()
 
         handlers = [
             (r"/?", MainHandler),

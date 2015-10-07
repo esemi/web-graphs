@@ -20,31 +20,17 @@ class DomainPublicHandler(BaseHandler):
     def post(self):
         """Try adding new domain to index"""
         query = 'http://%s' % self.get_argument('domain')
-        root_domain = self.application.tld_extractor.extract(query)
+        extract = self.application.tld_extractor.extract(query)
+        app_log.info("request add domain %s (%s)" % (query, extract))
 
-        if not root_domain:
+        if not extract:
             res = {'result': 'fail', 'message': 'not valid domain'}
         else:
-            request_id = yield self.application.db.add_request(query, root_domain)
-            app_log.info("add request %s (%s) with id %s" % (root_domain, query, request_id))
-            res = {'url':  self.reverse_url('search-result', request_id)}
             try:
-                yield self.application.db.add_graph_domain(root_domain)
-                app_log.info("force parse domain %s success" % root_domain)
-            except pymongo.errors.DuplicateKeyError:
-                app_log.info("force parse domain %s already parced" % root_domain)
-
-            domain = yield self.application.db.find_domain(root_domain)
-            app_log.info("find domain data by %s (%s)" % (root_domain, domain))
-
-            if domain['crawling_status'] in (models.CRAWLING_WAIT_STATUS, models.CRAWLING_PROCESS_STATUS):
-                res['result'] = 'wait'
+                yield self.application.storage.add_domain(extract[0], extract[1])
+            except Exception as e:
+                app_log.info("add domain fail (%s)" % e)
+                res = {'result': 'fail', 'message': str(e)}
             else:
-                if domain['crawling_status'] == models.CRAWLING_FAIL_STATUS:
-                    res['result'] = 'error'
-                    res['error'] = domain['crawling_error']
-                else:
-                    res['result'] = 'success'
-                    res['relations'] = domain['relations']
-
+                res = {'result': 'success', 'message': extract[0]}
         self.write(res)

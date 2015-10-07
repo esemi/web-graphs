@@ -5,8 +5,7 @@ import unittest
 from app.components.tld_extractor import Extractor
 
 
-class extractorTest(unittest.TestCase):
-
+class ExtractorTest(unittest.TestCase):
     _parser = None
 
     def setUp(self):
@@ -14,9 +13,6 @@ class extractorTest(unittest.TestCase):
 
     def test_tld_parse(self):
         urls = [
-            (u'качай.рф', u'качай.рф'),
-            (u'ёёё.качай.рф', u'качай.рф'),
-            (u'xn--61aaa.xn--80aa1ab0e.xn--p1ai', None),
             (u'', None),
             (u'/sdsdsd/sdsd?', None),
             (u'sdasdasdasdasdas dasd asdas dasd asd', None),
@@ -25,17 +21,15 @@ class extractorTest(unittest.TestCase):
             (u'127.0.0.1', None),
             (u'test', None),
             (u'test.test', None),
-            (u'www.yandex.ru', u'yandex.ru'),
-            (u'yandex.co.uk', u'yandex.co.uk'),
-            (u'YANdex.co.UK', u'yandex.co.uk'),
-            (u'azure-mobile.net', u'azure-mobile.net'),
-            (u'www.azure-mobile.net', u'azure-mobile.net'),
-            (u'ololo.azure-mobile.net', u'ololo.azure-mobile.net'),
-            (u'ddd.ololo.azure-mobile.net', u'ololo.azure-mobile.net'),
-            (u'blogspot.com.ar', u'blogspot.com.ar'),
-            (u'www.blogspot.com.ar', u'blogspot.com.ar'),
-            (u'ololo.blogspot.com.ar', u'ololo.blogspot.com.ar'),
-            (u'ddd.ololo.blogspot.com.ar', u'ololo.blogspot.com.ar'),
+            (u'качай.рф', (u'качай.рф', u'рф')),
+            (u'ёёё.качай.рф', (u'качай.рф', u'рф')),
+            (u'www.yandex.ru', (u'yandex.ru', u'ru')),
+            (u'yandex.co.uk:8080', (u'yandex.co.uk', u'co.uk')),
+            (u'YANdex.co.UK', (u'yandex.co.uk', u'co.uk')),
+            (u'blogspot.com.ar', (u'blogspot.com.ar', u'com.ar')),
+            (u'www.blogspot.com.ar', (u'blogspot.com.ar', u'com.ar')),
+            (u'ololo.blogspot.com.ar', (u'blogspot.com.ar', u'com.ar')),
+            (u'ddd.ololo.blogspot.com.ar', (u'blogspot.com.ar', u'com.ar')),
         ]
 
         for url, success in urls:

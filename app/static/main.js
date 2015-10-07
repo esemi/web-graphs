@@ -7,13 +7,12 @@ Zepto(function($){
     });
 
     $('.js-order').on('submit', function(e){
-        $.post('/graph/', { domain: $('.js-order-field').val() }, function(response){
-            if (response.result && response.result != 'fail') {
-                window.location = response.url;
-            }else{
-                // TODO invalid domain error
-            }
-        });
+        $.post(
+            '/domain/public',
+            {domain: $('.js-order-field').val()},
+            function(response) {
+                $('.js-console').append(response.message + '<br />');
+            });
         return false;
     });
 });

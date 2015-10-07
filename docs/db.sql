@@ -8,3 +8,5 @@ CREATE TABLE IF NOT EXISTS `domain` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ix_domains_domain` (`domain_full`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+ALTER TABLE `domain` ADD `date_add` DATE NOT NULL;
