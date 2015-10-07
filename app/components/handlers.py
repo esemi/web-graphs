@@ -24,13 +24,14 @@ class DomainPublicHandler(BaseHandler):
         app_log.info("request add domain %s (%s)" % (query, extract))
 
         if not extract:
-            res = {'result': 'fail', 'message': 'not valid domain'}
+            res = {'success': False, 'message': 'not valid domain'}
         else:
             try:
                 yield self.application.storage.add_domain(extract[0], extract[1])
             except Exception as e:
-                app_log.info("add domain fail (%s)" % e)
-                res = {'result': 'fail', 'message': str(e)}
+                res = {'success': False, 'message': str(e)}
             else:
-                res = {'result': 'success', 'message': extract[0]}
+                res = {'success': True, 'message': extract[0]}
+
+        app_log.info("response add domain %s" % res)
         self.write(res)
