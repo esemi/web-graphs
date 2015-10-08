@@ -11,7 +11,7 @@ from components.storage import Storage
 from components.queue import Q
 
 
-define("dealer_work_period_minutes", default=5, type=int)
+define("dealer_sleep_period_minutes", default=5, type=int)
 define("dealer_domains_per_task", default=10, type=int)
 
 
@@ -31,7 +31,7 @@ def dealer_process():
         else:
             app_log.info("not found domains")
 
-        time.sleep(options.dealer_work_period_minutes * 60)
+        time.sleep(options.dealer_sleep_period_minutes * 60)
 
     app_log.info('end dealer process')
 

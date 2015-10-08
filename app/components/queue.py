@@ -18,3 +18,17 @@ class Q:
     def add_crawler_task(self, domains):
         message = json.dumps(domains)
         self.channel.basic_publish('', CRAWLER_Q_NAME, message)
+
+    def get_crawler_task(self):
+        method_frame, header_frame, body = self.channel.basic_get(CRAWLER_Q_NAME)
+        if not method_frame:
+            return None
+
+        print method_frame
+        print header_frame
+        print json.loads(body)
+
+        return method_frame, header_frame, json.loads(body)
+
+    def complete_crawler_task(self, method_frame):
+        self.channel.basic_ack(method_frame.delivery_tag)
