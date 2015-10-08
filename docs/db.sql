@@ -10,3 +10,4 @@ CREATE TABLE IF NOT EXISTS `domain` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 ALTER TABLE `domain` ADD `date_add` DATE NOT NULL;
+ALTER TABLE `domain` ADD `last_update_date` DATETIME NULL DEFAULT NULL , ADD INDEX ( `last_update_date` );

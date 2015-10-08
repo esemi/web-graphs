@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import tornado.gen
-
 from tornado_mysql import connect
 
 
@@ -24,3 +23,19 @@ class Storage:
                           (domain_full, tld))
         raise tornado.gen.Return(cur.lastrowid)
 
+    @tornado.gen.coroutine
+    def fetch_domains_for_update(self, limit):
+        cur = yield self.cursor
+        yield cur.execute(u"""SELECT id, domain_full FROM `domain`
+            WHERE last_update_date IS NULL OR last_update_date <= NOW() - INTERVAL 1 MONTH
+            ORDER BY last_update_date
+            LIMIT %s
+        """, limit)
+        domains = cur.fetchall()
+        if not domains:
+            raise tornado.gen.Return(None)
+
+        ids = map(lambda x: str(x[0]), domains)
+        yield cur.execute(u"UPDATE `domain` SET last_update_date = NOW() WHERE id IN (%s)" % ','.join(ids))
+
+        raise tornado.gen.Return(domains)

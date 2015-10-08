@@ -10,7 +10,7 @@ import tornado.escape
 import tornado.httpserver
 from tornado.options import define, options, parse_command_line
 
-from components import uimodules, tld_extractor, storage
+from components import uimodules, tld_extractor, storage, queue
 from components.handlers import MainHandler, DomainPublicHandler
 
 
@@ -23,6 +23,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         self.tld_extractor = tld_extractor.Extractor()
         self.storage = storage.Storage()
+        self.q = queue.Q()
 
         handlers = [
             (r"/?", MainHandler),
