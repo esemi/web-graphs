@@ -13,8 +13,9 @@ class StorageTest(unittest.TestCase):
 
     def test_save_crawling_result(self):
         data = [
-            ('1', 'atata.com', 'undefined error', 'http://sdsdsd.com', '<html>sdsd <b>sdsd</b></html>'),
-            (1, 'atata.com', 'undefined error', 'http://sdsdsd.com', '<html>sdsd <b>sdsd</b></html>'),
+            ('0', 'atata.com', 'error message', 'http://sdsdsd.com', '<html>sdsd <b>sdsd</b></html>'),
+            ('0', '', '', '', ''),
+            ('0', 'atata.com', 'error message', 'http://sdsdsd.com', u'<html>sdsd атата<b>sdsd</b></html>'),
         ]
 
         for domain_id, domain_name, error, effective_url, body in data:
@@ -35,9 +36,7 @@ class StorageTest(unittest.TestCase):
                 data = f.read().split(DATA_STORAGE_SEPARATOR)
                 self.assertEqual([unicode(domain_id), unicode(domain_name), unicode(error), unicode(effective_url)],
                                  data)
-            with open(f_source, encoding='utf-8') as f:
-                source = f.read()
-                self.assertEqual(body, source)
+
 
 if __name__ == '__main__':
     unittest.main()

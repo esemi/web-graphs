@@ -42,12 +42,17 @@ class Crawler(object):
     def handle_response(domain, response):
         app_log_process('handle response %s' % domain)
 
-        error = None
-        effective_url = unicode(response.effective_url)
-        body = response.body
+        error = u''
+        body = u''
+        effective_url = response.effective_url
+
+        if response.body:
+            body = unicode(response.body, encoding='utf-8', errors='ignore')
 
         if response.error:
-            error = unicode(response.error)
+            error = unicode(str(response.error), encoding='utf-8', errors='ignore')
+
+        app_log_process('handle response result %s %s' % (response.code, error))
 
         return error, effective_url, body
 
@@ -61,21 +66,21 @@ class Crawler(object):
                                                      max_clients=num_conn)
         http_client = tornado.httpclient.AsyncHTTPClient()
 
-        keys = set()
-        for i, url in enumerate(self.domains):
+        for i, domain in enumerate(self.domains):
+            id, url = domain
             request = tornado.httpclient.HTTPRequest(url, connect_timeout=options.crawler_curl_timeout,
                                                      request_timeout=options.crawler_curl_timeout,
                                                      follow_redirects=True,
                                                      max_redirects=options.crawler_curl_max_redirects)
             http_client.fetch(request, callback=(yield tornado.gen.Callback(i)))
-            keys.add(i)
 
+        keys = set(range(len(self.domains)))
         while keys:
             key, response = yield yieldpoints.WaitAny(keys)
             domain = self.domains[key]
             error, effective_url, body = self.handle_response(self.domains[key], response)
             keys.remove(key)
-            self.storage.save_crawling_result(domain[0], domain[1], error, effective_url, body)
+            self.storage.save_crawling_result(str(domain[0]), domain[1], error, effective_url, body)
             self.q.add_parser_task(domain[0])
 
         app_log_process('end crawling process')
@@ -88,15 +93,13 @@ def crawler_process():
 
     while True:
         task = q.get_crawler_task()
-        if not task:
+        if task:
+            crawler = Crawler(task[2])
+            yield crawler.run()
+            q.complete_crawler_task(task[0])
+        else:
             app_log_process("not found task")
             time.sleep(options.crawler_sleep_period_sec)
-            continue
-
-        crawler = Crawler(task[2])
-        yield crawler.run()
-
-        q.complete_crawler_task(task[0])
 
     app_log_process('end crawler process')
 

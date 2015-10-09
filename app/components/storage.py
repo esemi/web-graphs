@@ -8,7 +8,7 @@ from tornado_mysql import connect
 
 SOURCE_STORAGE_PATH = '/tmp/webgraph/crawler_source/'
 DATA_STORAGE_PATH = '/tmp/webgraph/crawler_data/'
-DATA_STORAGE_SEPARATOR = '<=====================>'
+DATA_STORAGE_SEPARATOR = "\n<=====================>\n"
 
 
 class Storage:
@@ -62,8 +62,7 @@ class Storage:
             pass
 
         with open(filename_data, mode='w', encoding='utf-8') as f:
-            f.write(DATA_STORAGE_SEPARATOR.join([unicode(domain_id), unicode(domain_name), unicode(error),
-                                                 unicode(effective_url)]))
+            f.write(DATA_STORAGE_SEPARATOR.join([domain_id, domain_name, error, effective_url]))
         with open(filename_body, mode='w', encoding='utf-8') as f:
             f.write(body)
 
