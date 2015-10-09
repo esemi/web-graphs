@@ -11,8 +11,8 @@ from components.storage import Storage
 from components.queue import Q
 
 
-define("dealer_sleep_period_minutes", default=5, type=int)
-define("dealer_domains_per_task", default=10, type=int)
+define("dealer_sleep_period_minutes", default=1, type=int)
+define("dealer_domains_per_task", default=5000, type=int)
 
 
 @tornado.gen.coroutine

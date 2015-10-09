@@ -4,3 +4,4 @@ yieldpoints
 Tornado-MySQL==0.5
 tldextract==1.7.1
 pika==0.10.0
+lxml==3.4.4
