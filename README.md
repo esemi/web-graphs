@@ -8,6 +8,9 @@
 
 # run
 - ./app/web.py --debug=1
+- ./app/dealer.py
+- ./app/crawler.py
+- ./app/parser.py --debug=1
 - curl http://localhost:8888/
 
 # desc

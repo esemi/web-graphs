@@ -98,10 +98,13 @@ class Storage:
         return os.path.join(DATA_STORAGE_PATH, '%s.data' % domain_id)
 
     def save_crawling_result(self, domain_id, domain_name, error, effective_url, body):
-        with open(self.get_data_fname(domain_id), mode='w', encoding='utf-8') as f:
-            f.write(DATA_STORAGE_SEPARATOR.join([domain_id, domain_name, error, effective_url]))
-        with open(self.get_source_fname(domain_id), mode='w', encoding='utf-8') as f:
-            f.write(body)
+        f = open(self.get_data_fname(domain_id), mode='w', encoding='utf-8')
+        f.write(DATA_STORAGE_SEPARATOR.join([domain_id, domain_name, error, effective_url]))
+        f.close()
+
+        f = open(self.get_source_fname(domain_id), mode='w', encoding='utf-8')
+        f.write(body)
+        f.close()
 
     def clear_crawling_result(self, domain_id):
         os.remove(self.get_data_fname(domain_id))

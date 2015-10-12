@@ -6,6 +6,7 @@ import sys
 import logging
 
 import lxml.html
+import lxml.etree
 import tornado.gen
 import tornado.httpclient
 from tornado.options import define, options, parse_command_line
@@ -50,15 +51,19 @@ class Parser(object):
             app_log_process('parse redirect error %s' % effective_url, logging.DEBUG)
             return RESULT_ERROR, 'invalid redirect to %s' % effective_url
 
-        if not source:
-            app_log_process('parse empty source error %d' % len(source), logging.DEBUG)
-            return RESULT_ERROR, 'empty source %s' % len(source)
-
         if final_domain != domain_name:
             app_log_process('parse full redirect %s -> %s' % (domain_name, final_domain), logging.DEBUG)
             return RESULT_FULL_REDIRECT, final_domain
 
-        document = self.create_html_doc(source)
+        if not source:
+            app_log_process('parse empty source error %d' % len(source), logging.DEBUG)
+            return RESULT_ERROR, 'empty source %s' % len(source)
+
+        try:
+            document = self.create_html_doc(source)
+        except lxml.etree.ParserError as e:
+            app_log_process('parser error %s' % e, logging.WARNING)
+            return RESULT_ERROR, 'error parser %s' % e
 
         # a href
         href_links = self._links_domain_filter(document.xpath('//a/@href'), domain_name)
