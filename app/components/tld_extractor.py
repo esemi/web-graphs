@@ -27,4 +27,5 @@ class Extractor:
         if not res.suffix or not res.domain:
             return None
 
-        return '%s.%s' % (res.domain, res.suffix)
+        out = u'%s.%s' % (res.domain, res.suffix)
+        return out.encode('utf-8')

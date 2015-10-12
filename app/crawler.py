@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import time
+import pycurl
+import logging
 
 import yieldpoints
 import tornado.gen
@@ -45,7 +47,9 @@ class Crawler(object):
 
     @tornado.gen.coroutine
     def run(self):
-        # todo check c-ares enable
+        if pycurl.version.find('c-ares') < 0:
+            app_log_process('c-ares not installed (%s)' % pycurl.version, logging.ERROR)
+
         num_conn = min(len(self.domains), options.crawler_curl_conn)
         app_log_process('start crawling process %d domains, %d conn, %d timeout' % (len(self.domains), num_conn,
                                                                                     options.crawler_curl_timeout))

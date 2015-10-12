@@ -50,6 +50,10 @@ class Parser(object):
             app_log_process('parse redirect error %s' % effective_url, logging.DEBUG)
             return RESULT_ERROR, 'invalid redirect to %s' % effective_url
 
+        if not source:
+            app_log_process('parse empty source error %d' % len(source), logging.DEBUG)
+            return RESULT_ERROR, 'empty source %s' % len(source)
+
         if final_domain != domain_name:
             app_log_process('parse full redirect %s -> %s' % (domain_name, final_domain), logging.DEBUG)
             return RESULT_FULL_REDIRECT, final_domain
@@ -107,7 +111,6 @@ class Parser(object):
             for link in parsing_result[1]:
                 new_domain_id = yield self.storage.add_domain_custom(link)
                 relations.append((domain_id, new_domain_id))
-            print relations
             yield self.storage.clear_relations_from(domain_id)
             yield self.storage.add_relations(relations)
         else:
