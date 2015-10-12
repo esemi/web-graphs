@@ -27,4 +27,4 @@ class Extractor:
         if not res.suffix or not res.domain:
             return None
 
-        return '%s.%s' % (res.domain, res.suffix), res.suffix
+        return '%s.%s' % (res.domain, res.suffix)

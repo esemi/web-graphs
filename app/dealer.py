@@ -11,8 +11,8 @@ from components.storage import Storage
 from components.queue import Q
 
 
-define("dealer_sleep_period_minutes", default=1, type=int)
-define("dealer_domains_per_task", default=2, type=int)
+define("dealer_sleep_period_sec", default=30, type=int)
+define("dealer_domains_per_task", default=5000, type=int)
 
 
 @tornado.gen.coroutine
@@ -30,7 +30,7 @@ def dealer_process():
             del domains
         else:
             app_log.info("not found domains")
-            time.sleep(options.dealer_sleep_period_minutes * 60)
+            time.sleep(options.dealer_sleep_period_sec)
 
 
     app_log.info('end dealer process')

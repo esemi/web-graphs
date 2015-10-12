@@ -22,9 +22,7 @@ class StorageTest(unittest.TestCase):
             f_data = os.path.join(DATA_STORAGE_PATH, '%s.data' % domain_id)
             f_source = os.path.join(SOURCE_STORAGE_PATH, '%s.html' % domain_id)
 
-            res = self.s.save_crawling_result(domain_id, domain_name, error, effective_url, body)
-
-            self.assertEqual(res, (f_data, f_source))
+            self.s.save_crawling_result(domain_id, domain_name, error, effective_url, body)
 
             self.assertTrue(os.path.exists(SOURCE_STORAGE_PATH))
             self.assertTrue(os.path.exists(DATA_STORAGE_PATH))
@@ -32,10 +30,15 @@ class StorageTest(unittest.TestCase):
             self.assertTrue(os.path.exists(f_data))
             self.assertTrue(os.path.exists(f_source))
 
-            with open(f_data, encoding='utf-8') as f:
-                data = f.read().split(DATA_STORAGE_SEPARATOR)
-                self.assertEqual([unicode(domain_id), unicode(domain_name), unicode(error), unicode(effective_url)],
-                                 data)
+            res_valid = self.s.get_crawling_result(domain_id)
+            self.assertEqual((domain_name, error, effective_url, body), res_valid)
+
+    def test_get_crawling_result(self):
+        with self.assertRaises(IOError):
+            res_not_found = self.s.get_crawling_result(-1)
+
+        res_valid = self.s.get_crawling_result(0)
+        self.assertEqual(4, len(res_valid))
 
 
 if __name__ == '__main__':

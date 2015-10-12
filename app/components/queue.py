@@ -28,9 +28,16 @@ class Q:
 
         return method_frame, header_frame, json.loads(body)
 
-    def complete_crawler_task(self, method_frame):
+    def complete_task(self, method_frame):
         self.channel.basic_ack(method_frame.delivery_tag)
 
     def add_parser_task(self, domain_id):
         self.channel.basic_publish('', PARSER_Q_NAME, str(domain_id))
+
+    def get_parser_task(self):
+        method_frame, header_frame, body = self.channel.basic_get(PARSER_Q_NAME)
+        if not method_frame:
+            return None
+
+        return method_frame, header_frame, body
 

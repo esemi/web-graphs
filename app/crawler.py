@@ -2,34 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import time
-import multiprocessing as mp
-import logging
 
 import yieldpoints
 import tornado.gen
 import tornado.httpclient
-from tornado.log import app_log
 from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
+from components.utils import app_log_process
 
 
 define("crawler_sleep_period_sec", default=10, type=int)
 define("crawler_curl_conn", default=500, help="number of curl connections", type=int)
 define("crawler_curl_timeout", default=25, help="curl timeout", type=int)
 define("crawler_curl_max_redirects", default=5, help="curl max redirects", type=int)
-
-
-PROCESS_NAME = '%d-%s' % (mp.current_process().pid, mp.current_process().name)
-
-
-def app_log_process(message, level=logging.INFO):
-    app_log.log(level, '(%s) %s' % (PROCESS_NAME, message))
-
-
-def return_by_raise(val=None):
-    raise tornado.gen.Return(val)
 
 
 class Crawler(object):
@@ -96,7 +83,7 @@ def crawler_process():
         if task:
             crawler = Crawler(task[2])
             yield crawler.run()
-            q.complete_crawler_task(task[0])
+            q.complete_task(task[0])
         else:
             app_log_process("not found task")
             time.sleep(options.crawler_sleep_period_sec)
