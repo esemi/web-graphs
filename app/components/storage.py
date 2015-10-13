@@ -41,7 +41,10 @@ class Storage:
     def add_domain_custom(self, domain_full):
         new_domain_id = yield self.get_domain_by_name(domain_full)
         if not new_domain_id:
-            new_domain_id = yield self.add_domain(domain_full)
+            try:
+                new_domain_id = yield self.add_domain(domain_full)
+            except:
+                new_domain_id = yield self.get_domain_by_name(domain_full)
         raise tornado.gen.Return(new_domain_id)
 
     @tornado.gen.coroutine
