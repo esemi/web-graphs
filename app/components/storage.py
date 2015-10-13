@@ -84,10 +84,13 @@ class Storage:
         if not domains:
             raise tornado.gen.Return(None)
 
-        ids = map(lambda x: str(x[0]), domains)
-        yield cur.execute(u"UPDATE `domain` SET last_update_date = NOW() WHERE id IN (%s)" % ','.join(ids))
-
         raise tornado.gen.Return(domains)
+
+    @tornado.gen.coroutine
+    def update_domains_after_fetch(self, domains):
+        ids = map(lambda x: str(x[0]), domains)
+        cur = yield self.cursor
+        yield cur.execute(u"UPDATE `domain` SET last_update_date = NOW() WHERE id IN (%s)" % ','.join(ids))
 
     @staticmethod
     def get_source_fname(domain_id):

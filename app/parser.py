@@ -132,11 +132,9 @@ def parser_process():
     s = Storage()
     parser = Parser(s)
 
-    i = 0
     while True:
-        i += 1
-        log_fds('start %d loop' % i)
-        log_mem('start %d loop' % i)
+        log_fds('start loop')
+        log_mem('start loop')
         task = q.get_parser_task()
         if task:
             yield parser.run(task[2])

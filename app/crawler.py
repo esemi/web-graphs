@@ -87,11 +87,9 @@ def crawler_process():
     q = Q()
     s = Storage()
 
-    i = 0
     while True:
-        i += 1
-        log_fds('start %d loop' % i)
-        log_mem('start %d loop' % i)
+        log_fds('start loop')
+        log_mem('start loop')
         task = q.get_crawler_task()
         if task:
             crawler = Crawler(task[2], q, s)
