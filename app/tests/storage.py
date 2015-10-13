@@ -2,7 +2,6 @@
 
 import os
 import unittest
-from codecs import open
 
 from app.components.storage import Storage, SOURCE_STORAGE_PATH, DATA_STORAGE_PATH, DATA_STORAGE_SEPARATOR
 

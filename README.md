@@ -9,7 +9,7 @@
 # run
 - ./app/web.py --debug=1
 - ./app/dealer.py
-- ./app/crawler.py
+- ./app/crawler.py --debug=1
 - ./app/parser.py --debug=1
 - curl http://localhost:8888/
 

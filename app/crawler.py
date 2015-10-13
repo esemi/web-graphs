@@ -12,9 +12,10 @@ from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
-from components.utils import app_log_process
+from components.utils import app_log_process, log_fds
 
 
+define("debug", default=False, help="enable debug mode", type=bool)
 define("crawler_sleep_period_sec", default=10, type=int)
 define("crawler_curl_conn", default=500, help="number of curl connections", type=int)
 define("crawler_curl_timeout", default=25, help="curl timeout", type=int)
@@ -22,9 +23,9 @@ define("crawler_curl_max_redirects", default=5, help="curl max redirects", type=
 
 
 class Crawler(object):
-    def __init__(self, domains):
-        self.storage = Storage()
-        self.q = Q()
+    def __init__(self, domains, q, s):
+        self.storage = s
+        self.q = q
         self.domains = domains
 
     @staticmethod
@@ -74,29 +75,42 @@ class Crawler(object):
             self.storage.save_crawling_result(str(domain[0]), domain[1], error, effective_url, body)
             self.q.add_parser_task(domain[0])
 
+        http_client.close()
         app_log_process('end crawling process')
 
 
 @tornado.gen.coroutine
 def crawler_process():
     app_log_process('start crawler process')
+    log_fds('start')
     q = Q()
+    s = Storage()
 
+    i = 0
     while True:
+        i += 1
+        log_fds('start %d loop' % i)
         task = q.get_crawler_task()
         if task:
-            crawler = Crawler(task[2])
+            crawler = Crawler(task[2], q, s)
             yield crawler.run()
             q.complete_task(task[0])
+            del crawler
         else:
             app_log_process("not found task")
             time.sleep(options.crawler_sleep_period_sec)
 
     app_log_process('end crawler process')
+    log_fds('end')
 
 
 if __name__ == '__main__':
     parse_command_line()
+
+    if options.debug:
+        from tornado.log import app_log
+        app_log.setLevel(logging.DEBUG)
+
     ioloop = tornado.ioloop.IOLoop()
     ioloop.make_current()
     ioloop.run_sync(crawler_process)

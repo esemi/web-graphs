@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import time
-import sys
 import logging
 
 import lxml.html
@@ -13,7 +12,7 @@ from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
-from components.utils import app_log_process, return_by_raise
+from components.utils import app_log_process, return_by_raise, log_fds
 from components.tld_extractor import Extractor
 
 
@@ -27,9 +26,8 @@ RESULT_LINKS = 'LINKS'
 
 
 class Parser(object):
-    def __init__(self):
-        self.storage = Storage()
-        self.q = Q()
+    def __init__(self, s):
+        self.storage = s
         self.e = Extractor()
 
     def _links_domain_filter(self, links, ignore_domain_name=None):
@@ -128,10 +126,15 @@ class Parser(object):
 @tornado.gen.coroutine
 def parser_process():
     app_log_process('start parser process')
+    log_fds('start')
     q = Q()
-    parser = Parser()
+    s = Storage()
+    parser = Parser(s)
 
+    i = 0
     while True:
+        i += 1
+        log_fds('start %d loop' % i)
         task = q.get_parser_task()
         if task:
             yield parser.run(task[2])
