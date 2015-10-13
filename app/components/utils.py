@@ -6,6 +6,8 @@ import logging
 from tornado.options import options
 import tornado.gen
 from tornado.log import app_log
+from pympler import muppy, summary
+
 from fd_table_status import fd_table_status_str as fds
 
 
@@ -24,3 +26,12 @@ def app_log_process(message, level=logging.INFO):
 def log_fds(mes=''):
     if options.debug:
         app_log.log(logging.DEBUG, 'fds (%s): %s' % (mes, fds()))
+
+
+def log_mem(mes=''):
+    if options.debug:
+        all_objects = muppy.get_objects()
+        sum1 = summary.summarize(all_objects)
+        app_log.log(logging.DEBUG, 'mem (%s): %d' % (mes, len(all_objects)))
+        summary.print_(sum1)
+

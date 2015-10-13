@@ -12,7 +12,7 @@ from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
-from components.utils import app_log_process, return_by_raise, log_fds
+from components.utils import app_log_process, return_by_raise, log_fds, log_mem
 from components.tld_extractor import Extractor
 
 
@@ -36,8 +36,7 @@ class Parser(object):
 
     @staticmethod
     def create_html_doc(source):
-        s = source.lower().strip().encode('utf-8')
-        return lxml.html.fromstring(s)
+        return lxml.html.fromstring(source)
 
     def parse_result(self, domain_name, error, effective_url, source):
         if error:
@@ -53,12 +52,13 @@ class Parser(object):
             app_log_process('parse full redirect %s -> %s' % (domain_name, final_domain), logging.DEBUG)
             return RESULT_FULL_REDIRECT, final_domain
 
-        if not source:
-            app_log_process('parse empty source error %d' % len(source), logging.DEBUG)
-            return RESULT_ERROR, 'empty source %s' % len(source)
+        s = source.lower().strip().encode('utf-8')
+        if not s:
+            app_log_process('parse empty source error %d' % len(s), logging.DEBUG)
+            return RESULT_ERROR, 'empty source %s' % len(s)
 
         try:
-            document = self.create_html_doc(source)
+            document = self.create_html_doc(s)
         except lxml.etree.ParserError as e:
             app_log_process('parser error %s' % e, logging.WARNING)
             return RESULT_ERROR, 'error parser %s' % e
@@ -127,6 +127,7 @@ class Parser(object):
 def parser_process():
     app_log_process('start parser process')
     log_fds('start')
+    log_mem('start')
     q = Q()
     s = Storage()
     parser = Parser(s)
@@ -135,6 +136,7 @@ def parser_process():
     while True:
         i += 1
         log_fds('start %d loop' % i)
+        log_mem('start %d loop' % i)
         task = q.get_parser_task()
         if task:
             yield parser.run(task[2])

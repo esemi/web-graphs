@@ -12,12 +12,12 @@ from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
-from components.utils import app_log_process, log_fds
+from components.utils import app_log_process, log_fds, log_mem
 
 
 define("debug", default=False, help="enable debug mode", type=bool)
 define("crawler_sleep_period_sec", default=10, type=int)
-define("crawler_curl_conn", default=500, help="number of curl connections", type=int)
+define("crawler_curl_conn", default=300, help="number of curl connections", type=int)
 define("crawler_curl_timeout", default=25, help="curl timeout", type=int)
 define("crawler_curl_max_redirects", default=5, help="curl max redirects", type=int)
 
@@ -83,6 +83,7 @@ class Crawler(object):
 def crawler_process():
     app_log_process('start crawler process')
     log_fds('start')
+    log_mem('start')
     q = Q()
     s = Storage()
 
@@ -90,6 +91,7 @@ def crawler_process():
     while True:
         i += 1
         log_fds('start %d loop' % i)
+        log_mem('start %d loop' % i)
         task = q.get_crawler_task()
         if task:
             crawler = Crawler(task[2], q, s)
