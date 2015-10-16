@@ -55,13 +55,10 @@ class Storage:
         yield cur.execute(u"DELETE FROM `relations` WHERE from_domain_id = %s", (domain_id))
 
     @tornado.gen.coroutine
-    def replace_relations_from(self, domain_id, relations_list):
+    def add_relations_from(self, relations_list):
         cur = yield self.cursor
-        yield self.__conn.autocommit(False)
-        yield self.clear_relations_from(domain_id)
-        yield cur.executemany(u"INSERT INTO `relations` (`from_domain_id`, `to_domain_id`) VALUES (%s, %s)", relations_list)
-        yield self.__conn.commit()
-        yield self.__conn.autocommit(True)
+        yield cur.executemany(u"INSERT INTO `relations` (`from_domain_id`, `to_domain_id`) VALUES (%s, %s) "
+                              u"ON DUPLICATE KEY UPDATE from_domain_id=from_domain_id", relations_list)
 
     @tornado.gen.coroutine
     def get_domain_by_name(self, domain_full):

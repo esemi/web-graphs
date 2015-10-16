@@ -106,7 +106,8 @@ class Parser(object):
         elif parsing_result[0] == RESULT_FULL_REDIRECT:
             new_domain_id = yield self.storage.add_domain_custom(parsing_result[1])
             yield self.storage.update_by_parser(domain_id, True)
-            yield self.storage.replace_relations_from(domain_id, [(domain_id, new_domain_id)])
+            yield self.storage.clear_relations_from(domain_id)
+            yield self.storage.add_relations_from([(domain_id, new_domain_id)])
 
         elif parsing_result[0] == RESULT_LINKS:
             yield self.storage.update_by_parser(domain_id, True)
@@ -114,7 +115,8 @@ class Parser(object):
             for link in parsing_result[1]:
                 new_domain_id = yield self.storage.add_domain_custom(link)
                 relations.append((domain_id, new_domain_id))
-            yield self.storage.replace_relations_from(domain_id, relations)
+            yield self.storage.clear_relations_from(domain_id)
+            yield self.storage.add_relations_from(relations)
 
         else:
             raise RuntimeError('Unknown parsing result type %s' % parsing_result[0])

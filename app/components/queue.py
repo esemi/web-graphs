@@ -15,7 +15,7 @@ class Q:
         self.channel = self.conn.channel()
         self.channel.queue_declare(queue=CRAWLER_Q_NAME, durable=True)
         self.channel.queue_declare(queue=PARSER_Q_NAME, durable=True)
-        self.channel.basic_qos(prefetch_count=10)
+        self.channel.basic_qos(prefetch_count=1)
 
     def add_crawler_task(self, domains):
         message = json.dumps(domains)
