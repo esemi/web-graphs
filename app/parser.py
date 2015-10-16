@@ -12,7 +12,7 @@ from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
-from components.utils import app_log_process, return_by_raise, log_fds, log_mem
+from components.utils import app_log_process, return_by_raise, log_fds, log_mem, to_unicode
 from components.tld_extractor import Extractor
 
 
@@ -43,7 +43,7 @@ class Parser(object):
             app_log_process('parse unknown error %s' % error, logging.DEBUG)
             return RESULT_ERROR, error
 
-        final_domain = self.e.extract(unicode(effective_url))
+        final_domain = self.e.extract(effective_url)
         if not final_domain:
             app_log_process('parse redirect error %s' % effective_url, logging.DEBUG)
             return RESULT_ERROR, 'invalid redirect to %s' % effective_url
@@ -64,8 +64,9 @@ class Parser(object):
             return RESULT_ERROR, 'error parser %s' % e
 
         # a href
-        href_links = self._links_domain_filter(document.xpath('//a/@href'), domain_name)
-        app_log_process('found a@href links %d (%s)' % (len(href_links), ','.join(href_links)), logging.DEBUG)
+        href_links_source = document.xpath('//a/@href')
+        href_links = self._links_domain_filter(href_links_source, domain_name)
+        app_log_process('found a@href links %d (%s)' % (len(href_links_source), ','.join(href_links_source[:10])), logging.DEBUG)
 
         # # script src js
         # script_links = self._links_domain_filter(document.xpath('//script/@src'))
@@ -105,8 +106,7 @@ class Parser(object):
         elif parsing_result[0] == RESULT_FULL_REDIRECT:
             new_domain_id = yield self.storage.add_domain_custom(parsing_result[1])
             yield self.storage.update_by_parser(domain_id, True)
-            yield self.storage.clear_relations_from(domain_id)
-            yield self.storage.add_relations([(domain_id, new_domain_id)])
+            yield self.storage.replace_relations_from(domain_id, [(domain_id, new_domain_id)])
 
         elif parsing_result[0] == RESULT_LINKS:
             yield self.storage.update_by_parser(domain_id, True)
@@ -114,8 +114,8 @@ class Parser(object):
             for link in parsing_result[1]:
                 new_domain_id = yield self.storage.add_domain_custom(link)
                 relations.append((domain_id, new_domain_id))
-            yield self.storage.clear_relations_from(domain_id)
-            yield self.storage.add_relations(relations)
+            yield self.storage.replace_relations_from(domain_id, relations)
+
         else:
             raise RuntimeError('Unknown parsing result type %s' % parsing_result[0])
 

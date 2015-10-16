@@ -35,3 +35,12 @@ def log_mem(mes=''):
         app_log.log(logging.DEBUG, 'mem (%s): %d' % (mes, len(all_objects)))
         summary.print_(sum1)
 
+
+def to_unicode(s):
+    if isinstance(s, unicode):
+        return s
+    elif isinstance(s, str):
+        return unicode(s, encoding='utf-8', errors='ignore')
+    else:
+        return s
+

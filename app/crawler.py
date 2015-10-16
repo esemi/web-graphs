@@ -12,7 +12,7 @@ from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
-from components.utils import app_log_process, log_fds, log_mem
+from components.utils import app_log_process, log_fds, log_mem, to_unicode
 
 
 define("debug", default=False, help="enable debug mode", type=bool)
@@ -37,10 +37,10 @@ class Crawler(object):
         effective_url = response.effective_url
 
         if response.body:
-            body = unicode(response.body, encoding='utf-8', errors='ignore')
+            body = to_unicode(response.body)
 
         if response.error:
-            error = unicode(str(response.error), encoding='utf-8', errors='ignore')
+            error = to_unicode(str(response.error))
 
         app_log_process('handle response result %s %s' % (response.code, error))
 

@@ -6,9 +6,11 @@ from codecs import open
 import tornado.gen
 from tornado_mysql import connect
 
+from utils import to_unicode
+
 SOURCE_STORAGE_PATH = '/tmp/webgraph/crawler_source/'
 DATA_STORAGE_PATH = '/tmp/webgraph/crawler_data/'
-DATA_STORAGE_SEPARATOR = "\n<=====================>\n"
+DATA_STORAGE_SEPARATOR = u"\n<=====================>\n"
 
 
 class Storage:
@@ -28,7 +30,7 @@ class Storage:
     def cursor(self):
         if not self.__conn:
             self.__conn = yield connect(host='127.0.0.1', port=3306, user='root', passwd='root', db='web_graph',
-                                        use_unicode=True, autocommit=True)
+                                        use_unicode=True, autocommit=True, charset='utf8')
         raise tornado.gen.Return(self.__conn.cursor())
 
     @tornado.gen.coroutine
@@ -48,9 +50,18 @@ class Storage:
         raise tornado.gen.Return(new_domain_id)
 
     @tornado.gen.coroutine
-    def add_relations(self, relations_list):
+    def clear_relations_from(self, domain_id):
         cur = yield self.cursor
+        yield cur.execute(u"DELETE FROM `relations` WHERE from_domain_id = %s", (domain_id))
+
+    @tornado.gen.coroutine
+    def replace_relations_from(self, domain_id, relations_list):
+        cur = yield self.cursor
+        yield self.__conn.autocommit(False)
+        yield self.clear_relations_from(domain_id)
         yield cur.executemany(u"INSERT INTO `relations` (`from_domain_id`, `to_domain_id`) VALUES (%s, %s)", relations_list)
+        yield self.__conn.commit()
+        yield self.__conn.autocommit(True)
 
     @tornado.gen.coroutine
     def get_domain_by_name(self, domain_full):
@@ -62,18 +73,11 @@ class Storage:
         else:
             raise tornado.gen.Return(None)
 
-
     @tornado.gen.coroutine
     def update_by_parser(self, domain_id, is_success):
         cur = yield self.cursor
         yield cur.execute(u"UPDATE `domain` SET last_update_date = NOW(), last_update_state = %s WHERE id = %s LIMIT 1",
                           ('success' if is_success else 'error', domain_id))
-
-    @tornado.gen.coroutine
-    def clear_relations_from(self, domain_id):
-        cur = yield self.cursor
-        yield cur.execute(u"DELETE FROM `relations` WHERE from_domain_id = %s",
-                          (domain_id))
 
     @tornado.gen.coroutine
     def fetch_domains_for_update(self, limit):
@@ -105,13 +109,19 @@ class Storage:
 
     def save_crawling_result(self, domain_id, domain_name, error, effective_url, body):
         with open(self.get_data_fname(domain_id), mode='w', encoding='utf-8') as f:
-            f.write(DATA_STORAGE_SEPARATOR.join([domain_id, domain_name, error, effective_url]))
+            f.write(DATA_STORAGE_SEPARATOR.join([domain_id, domain_name, error, to_unicode(effective_url)]))
         with open(self.get_source_fname(domain_id), mode='w', encoding='utf-8') as f:
             f.write(body)
 
     def clear_crawling_result(self, domain_id):
-        os.remove(self.get_data_fname(domain_id))
-        os.remove(self.get_source_fname(domain_id))
+        try:
+            os.remove(self.get_data_fname(domain_id))
+        except OSError:
+            pass
+        try:
+            os.remove(self.get_source_fname(domain_id))
+        except OSError:
+            pass
 
     def get_crawling_result(self, domain_id):
         with open(self.get_data_fname(domain_id), mode='r', encoding='utf-8') as f:
