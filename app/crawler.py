@@ -18,7 +18,7 @@ from components.utils import app_log_process, log_fds, log_mem, to_unicode
 define("debug", default=False, help="enable debug mode", type=bool)
 define("crawler_sleep_period_sec", default=10, type=int)
 define("crawler_curl_conn", default=300, help="number of curl connections", type=int)
-define("crawler_curl_timeout", default=25, help="curl timeout", type=int)
+define("crawler_curl_timeout", default=30, help="curl timeout", type=int)
 define("crawler_curl_max_redirects", default=5, help="curl max redirects", type=int)
 
 

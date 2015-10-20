@@ -14,9 +14,9 @@ from components.utils import log_mem, log_fds
 
 
 define("debug", default=False, help="enable debug mode", type=bool)
-define("dealer_sleep_period_sec", default=15, type=int)
+define("dealer_sleep_period_sec", default=60, type=int)
 define("dealer_fetch_task_sleep_period_sec", default=10, type=int)
-define("dealer_domains_per_task", default=3000, type=int)
+define("dealer_domains_per_task", default=1000, type=int)
 
 
 @tornado.gen.coroutine
