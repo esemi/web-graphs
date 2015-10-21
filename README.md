@@ -13,6 +13,11 @@
 - ./app/parser.py --debug=1
 - curl http://localhost:8888/
 
+# shortcuts
+- sudo supervisorctl update
+- sudo supervisorctl start web-graph:*
+- sudo rabbitmqctl list_queues
+
 # desc
 Парсим по одному разу всё что найдём на добавленных вручную и автоматом сайтах.
 Если сайт не отпарсился, то записываем ошибку и забиваем на него.
