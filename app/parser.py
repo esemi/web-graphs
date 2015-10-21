@@ -18,6 +18,7 @@ from components.tld_extractor import Extractor
 
 define("parser_sleep_period_sec", default=10, type=int)
 define("parser_max_source_size_mb", default=5, type=int)
+define("parser_max_link_count", default=100, type=int)
 define("debug", default=False, help="enable debug mode", type=bool)
 
 
@@ -70,8 +71,9 @@ class Parser(object):
 
         # a href
         href_links_source = document.xpath('//a/@href')
-        href_links = self._links_domain_filter(href_links_source, domain_name)
         app_log_process('found a@href links %d (%s)' % (len(href_links_source), ','.join(href_links_source[:10])), logging.DEBUG)
+        href_links = self._links_domain_filter(href_links_source, domain_name)
+        app_log_process('filtered a@href links %d (%s)' % (len(href_links), ','.join(href_links[:10])), logging.DEBUG)
 
         # # script src js
         # script_links = self._links_domain_filter(document.xpath('//script/@src'))
@@ -84,6 +86,10 @@ class Parser(object):
         # # img src
         # img_links = self._links_domain_filter(document.xpath('//img/@src'))
         # app_log_process('found img@src links %d (%s)' % (len(img_links), ','.join(img_links)), logging.DEBUG)
+
+        if len(href_links) > options.parser_max_link_count:
+            app_log_process('parse too many links error %d' % len(href_links), logging.DEBUG)
+            return RESULT_ERROR, 'too many links %s' % len(href_links)
 
         return RESULT_LINKS, href_links
 
