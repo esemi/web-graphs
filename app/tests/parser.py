@@ -3,11 +3,12 @@
 import unittest
 
 from app.parser import Parser
+from app.components.storage import Storage
 
 
 class ParserTest(unittest.TestCase):
     def setUp(self):
-        self.p = Parser()
+        self.p = Parser(None)
 
     def test_links_compact(self):
         data = [

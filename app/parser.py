@@ -17,6 +17,7 @@ from components.tld_extractor import Extractor
 
 
 define("parser_sleep_period_sec", default=10, type=int)
+define("parser_max_source_size_mb", default=5, type=int)
 define("debug", default=False, help="enable debug mode", type=bool)
 
 
@@ -56,6 +57,10 @@ class Parser(object):
         if not s:
             app_log_process('parse empty source error %d' % len(s), logging.DEBUG)
             return RESULT_ERROR, 'empty source %s' % len(s)
+
+        if len(s) > options.parser_max_source_size_mb * 1024 * 1024:
+            app_log_process('parse large source error %d' % len(s), logging.DEBUG)
+            return RESULT_ERROR, 'large source %s' % len(s)
 
         try:
             document = self.create_html_doc(s)
