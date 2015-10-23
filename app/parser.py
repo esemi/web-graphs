@@ -12,13 +12,14 @@ from tornado.options import define, options, parse_command_line
 
 from components.storage import Storage
 from components.queue import Q
-from components.utils import app_log_process, return_by_raise, log_fds, log_mem, to_unicode
+from components.utils import app_log_process, return_by_raise, log_fds, log_mem, LogStat
 from components.tld_extractor import Extractor
 
 
 define("parser_sleep_period_sec", default=10, type=int)
 define("parser_max_source_size_mb", default=5, type=int)
 define("parser_max_link_count", default=100, type=int)
+define("parser_max_task_count", default=4, type=int)
 define("debug", default=False, help="enable debug mode", type=bool)
 
 
@@ -145,19 +146,22 @@ def parser_process():
     s = Storage()
     parser = Parser(s)
 
-    while True:
+    LogStat.start()
+    i = 0
+    while True and i < options.parser_max_task_count:
         log_fds('start loop')
         log_mem('start loop')
         task = q.get_parser_task()
         if task:
             yield parser.run(task[2])
             q.complete_task(task[0])
+            i += 1
         else:
             app_log_process("not found task")
             time.sleep(options.parser_sleep_period_sec)
 
     app_log_process('end parser process')
-
+    LogStat.end(i)
 
 if __name__ == '__main__':
     parse_command_line()

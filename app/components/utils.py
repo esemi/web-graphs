@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import multiprocessing as mp
+import time
 import logging
+import resource
 
 from tornado.options import options
 import tornado.gen
 from tornado.log import app_log
-from pympler import muppy, summary
+from pympler import tracker
 
 from fd_table_status import fd_table_status_str as fds
 
@@ -25,15 +27,13 @@ def app_log_process(message, level=logging.INFO):
 
 def log_fds(mes=''):
     if options.debug:
-        app_log.log(logging.DEBUG, 'fds (%s): %s' % (mes, fds()))
+        app_log_process('fds (%s): %s' % (mes, fds()), logging.DEBUG)
 
 
 def log_mem(mes=''):
     if options.debug:
-        all_objects = muppy.get_objects()
-        sum1 = summary.summarize(all_objects)
-        app_log.log(logging.DEBUG, 'mem (%s): %d' % (mes, len(all_objects)))
-        summary.print_(sum1)
+        app_log_process('mem (%s): %.2f mb' % (mes, float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) / 1024),
+                        logging.DEBUG)
 
 
 def to_unicode(s):
@@ -43,4 +43,25 @@ def to_unicode(s):
         return unicode(s, encoding='utf-8', errors='ignore')
     else:
         return s
+
+
+class LogStat():
+    _tr = None
+    _start_time = None
+    _end_time = None
+
+    @classmethod
+    def start(cls):
+        cls._start_time = time.time()
+        cls._tr = tracker.SummaryTracker()
+
+    @classmethod
+    def end(cls, task_count):
+        pass
+        cls._end_time = time.time()
+        sum_time_sec = cls._end_time - cls._start_time
+        avg_task_per_sec = task_count / sum_time_sec
+        app_log_process('stat log: sum time %.2fsec, sum task %d, task per sec %.2f' %
+                        (sum_time_sec, task_count, avg_task_per_sec))
+        cls._tr.print_diff()
 
